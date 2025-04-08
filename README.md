@@ -35,6 +35,11 @@ cp example.env .env
 - `REDIS_O_EXTERNAL_PORT`: External port for RedisInsight (default: 8001)
 - `REDIS_PASSWORD`: Authentication password
 
+### Generate random password
+```bash
+openssl rand -base64 30 | tr -dc 'a-zA-Z0-9' | head -c 30 && echo
+```
+
 ## 🚀 Usage
 
 To start the service:
