@@ -1,22 +1,35 @@
 services:
   redis:
     image: redis/redis-stack:${REDIS_VERSION:-latest}
-    env_file:
-      - .env
     volumes:
-      - ./redis-data:/data
+      - ./.env:/app/.env
+      - redis-data:/data
       - ./redis-stack.conf:/redis-stack.conf
       - ./entrypoint.sh:/entrypoint.sh
     ports:
       - "${REDIS_EXTERNAL_PORT:-6379}:6379"
     command: "sh /entrypoint.sh"
+    environment:
+      - CONTAINER_NAME=${CONTAINER_NAME}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_EXTERNAL_PORT=${REDIS_EXTERNAL_PORT}
+      - REDIS_REPLICAS=${REDIS_REPLICAS}
+      - REDIS_VERSION=${REDIS_VERSION}
     deploy:
-      placement:
-        constraints:
-          - node.labels.role == redis-storage
-    restart: always
+      mode: replicated
+      replicas: ${REDIS_REPLICAS:-1}
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a ${REDIS_PASSWORD} ping | grep PONG"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping", "|", "grep", "PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  redis-data:
+    driver: local

@@ -1,5 +1,17 @@
 #!/usr/bin/dumb-init /bin/sh
 
+if [ -f /app/.env ]; then
+    while IFS= read -r line; do
+        if [[ ! "$line" =~ ^#.*$ ]] && [ ! -z "$line" ]; then
+            echo "$line"
+            export "$line"
+        fi
+    done < /app/.env
+else
+  echo "Error: /app/.env file not found"
+  exit 1
+fi
+
 ### docker entrypoint script, for starting redis stack
 BASEDIR=/opt/redis-stack
 cd ${BASEDIR}
@@ -22,10 +34,9 @@ if [ -z "${REDISEARCH_ARGS}" ]; then
 REDISEARCH_ARGS="MAXSEARCHRESULTS 10000 MAXAGGREGATERESULTS 10000"
 fi
 
-${CMD} \
-${CONFFILE} \
---dir ${REDIS_DATA_DIR} \
---requirepass ${REDIS_PASSWORD} \
+${CMD} ${CONFFILE} \
+--dir "${REDIS_DATA_DIR}" \
+--requirepass "${REDIS_PASSWORD}" \
 --protected-mode no \
 --daemonize no \
 --loadmodule /opt/redis-stack/lib/rediscompat.so \
@@ -33,5 +44,8 @@ ${CONFFILE} \
 --loadmodule /opt/redis-stack/lib/redistimeseries.so ${REDISTIMESERIES_ARGS} \
 --loadmodule /opt/redis-stack/lib/rejson.so ${REDISJSON_ARGS} \
 --loadmodule /opt/redis-stack/lib/redisbloom.so ${REDISBLOOM_ARGS} \
---loadmodule /opt/redis-stack/lib/redisgears.so v8-plugin-path /opt/redis-stack/lib/libredisgears_v8_plugin.so  ${REDISGEARS_ARGS} \
-${REDIS_ARGS}
+--loadmodule /opt/redis-stack/lib/redisgears.so v8-plugin-path /opt/redis-stack/lib/libredisgears_v8_plugin.so ${REDISGEARS_ARGS} \
+${REDIS_ARGS} &
+
+child=$!
+wait $child
