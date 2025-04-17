@@ -30,6 +30,14 @@ if [ -z "$IMAGE_NAME" ]; then
     exit 1
 fi
 
+# docker buildx create --name multiarch-builder --use
+# docker buildx inspect --bootstrap 
+
 echo "Environment variables loaded"
 echo "Image name: $IMAGE_NAME"
-docker build --build-arg $REDIS_VERSION -t $IMAGE_NAME .
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --build-arg REDIS_VERSION=$REDIS_VERSION \
+  -t $IMAGE_NAME:$REDIS_VERSION \
+  -t $IMAGE_NAME:latest \
+  --push .

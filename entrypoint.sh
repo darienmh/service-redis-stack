@@ -1,19 +1,5 @@
 #!/usr/bin/dumb-init /bin/sh
 
-if [ -f /app/.env ]; then
-    while IFS= read -r line; do
-        # Skip empty lines and comments
-        case "$line" in
-            \#*|"") continue ;;
-        esac
-        echo "$line"
-        export "$line"
-    done < /app/.env
-else
-    echo "Error: /app/.env file not found"
-    exit 1
-fi
-
 ### docker entrypoint script, for starting redis stack
 BASEDIR=/opt/redis-stack
 cd ${BASEDIR}
