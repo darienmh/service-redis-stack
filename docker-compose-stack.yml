@@ -1,19 +1,8 @@
 services:
   redis:
-    image: redis/redis-stack:${REDIS_VERSION:-latest}
+    image: ${IMAGE_NAME:-redis/redis-stack:latest}
     volumes:
-      - type: bind
-        source: ${PWD}/.env
-        target: /app/.env
-      - type: bind
-        source: ${PWD}/redis-data
-        target: /data
-      - type: bind
-        source: ${PWD}/redis-stack.conf
-        target: /redis-stack.conf
-      - type: bind
-        source: ${PWD}/entrypoint.sh
-        target: /entrypoint.sh
+      - redis-data:/data
     ports:
       - "${REDIS_EXTERNAL_PORT:-6379}:6379"
     command: "sh /entrypoint.sh"
@@ -40,3 +29,4 @@ services:
 
 volumes:
   redis-data:
+    driver: local

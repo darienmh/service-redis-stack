@@ -1,18 +1,6 @@
 #!/bin/sh
 echo "--- Deploying service ---"
 
-# Verificar y crear directorios necesarios
-echo "Checking and creating required directories..."
-mkdir -p redis-data
-
-# Check required files
-for file in .env redis-stack.conf entrypoint.sh; do
-    if [ ! -f "$file" ]; then
-        echo "Error: Required file $file not found"
-        exit 1
-    fi
-done
-
 echo "Loading environment variables..."
 if [ -f ./.env ]; then
     while IFS= read -r line; do
@@ -67,3 +55,4 @@ done
 echo "Error: The service failed to start after multiple attempts"
 docker service logs "${CONTAINER_NAME}_redis" 2>/dev/null || echo "No logs available yet"
 exit 1
+

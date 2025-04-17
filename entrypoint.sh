@@ -2,14 +2,16 @@
 
 if [ -f /app/.env ]; then
     while IFS= read -r line; do
-        if [[ ! "$line" =~ ^#.*$ ]] && [ ! -z "$line" ]; then
-            echo "$line"
-            export "$line"
-        fi
+        # Skip empty lines and comments
+        case "$line" in
+            \#*|"") continue ;;
+        esac
+        echo "$line"
+        export "$line"
     done < /app/.env
 else
-  echo "Error: /app/.env file not found"
-  exit 1
+    echo "Error: /app/.env file not found"
+    exit 1
 fi
 
 ### docker entrypoint script, for starting redis stack
